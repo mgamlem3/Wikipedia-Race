@@ -9,6 +9,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -25,15 +26,18 @@ public class WikipediaWebRequest
 
     public WikipediaWebRequest() {}
 
-    public WikipediaWebRequest(string requested_page, ref List<Webpage> webpages) {
+    public WikipediaWebRequest(string requested_page, ref ConcurrentDictionary<string, Webpage> webpages) {
         RequestedPage = requested_page;
         Controller(ref webpages);
     }
 
-    private void Controller(ref List<Webpage> webpages) {
-        string response = NavigateToWebpage();
-        if (response != null) {
-            ParseResposne(response, ref webpages);
+    private void Controller(ref ConcurrentDictionary<string, Webpage> webpages) {
+        Webpage temp;
+        if (!webpages.TryGetValue(RequestedPage, out temp)) {
+            string response = NavigateToWebpage();
+            if (response != null) {
+                ParseResposne(response, ref webpages);
+            }
         }
     }
 
@@ -70,16 +74,11 @@ public class WikipediaWebRequest
     // input: raw HTML response, reference to master webpage list
     // output: 
     // creates new webpage if successfully parsed
-    private void ParseResposne(string responseHTML, ref List<Webpage> webpages) {
+    private void ParseResposne(string responseHTML, ref ConcurrentDictionary<string, Webpage> webpages) {
         Match title_match = TITLE_REGEX.Match(responseHTML);
         MatchCollection links_match = Regex.Matches(responseHTML, LINK_REGEX_PATTERN);//LINK_REGEX.Match(responseHTML);
 
-        Console.WriteLine("Title Matches");
-        // TODO: only take one match
-        for (var i = 0; i < title_match.Length; i++) {
-            Console.WriteLine(title_match.Groups[i].ToString());
-        }
-
+        Console.WriteLine("Title\n" + title_match.Groups[1].ToString());
 
         List<string> unordered_links = new List<string>();
 
@@ -92,9 +91,10 @@ public class WikipediaWebRequest
             unordered_links.Add(groups[1].ToString());
             // Console.WriteLine(groups[1].ToString());
         }
-        Webpage newWebpage = new Webpage(title_match.ToString(), unordered_links);
+        Webpage newWebpage = new Webpage(title_match.Groups[1].ToString(), unordered_links);
 
-        // TODO: add webpage to master list
+        // add webpage to master list
+        webpages.TryAdd(newWebpage.Title, newWebpage);
     }
 
     // used to determine if webpage naviagation was successful
