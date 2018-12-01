@@ -1,0 +1,11 @@
+/Users/michael/Desktop/Wikipedia Race/obj/Debug/netcoreapp2.1/Wikipedia Race.csprojAssemblyReference.cache
+/Users/michael/Desktop/Wikipedia Race/obj/Debug/netcoreapp2.1/Wikipedia Race.csproj.CoreCompileInputs.cache
+/Users/michael/Desktop/Wikipedia Race/obj/Debug/netcoreapp2.1/Wikipedia Race.AssemblyInfoInputs.cache
+/Users/michael/Desktop/Wikipedia Race/obj/Debug/netcoreapp2.1/Wikipedia Race.AssemblyInfo.cs
+/Users/michael/Desktop/Wikipedia Race/bin/Debug/netcoreapp2.1/Wikipedia Race.deps.json
+/Users/michael/Desktop/Wikipedia Race/bin/Debug/netcoreapp2.1/Wikipedia Race.runtimeconfig.json
+/Users/michael/Desktop/Wikipedia Race/bin/Debug/netcoreapp2.1/Wikipedia Race.runtimeconfig.dev.json
+/Users/michael/Desktop/Wikipedia Race/bin/Debug/netcoreapp2.1/Wikipedia Race.dll
+/Users/michael/Desktop/Wikipedia Race/bin/Debug/netcoreapp2.1/Wikipedia Race.pdb
+/Users/michael/Desktop/Wikipedia Race/obj/Debug/netcoreapp2.1/Wikipedia Race.dll
+/Users/michael/Desktop/Wikipedia Race/obj/Debug/netcoreapp2.1/Wikipedia Race.pdb
