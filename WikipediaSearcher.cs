@@ -43,8 +43,7 @@ public class WikipediaSearcher
                     if (successfulTake) {
                         nextPage = Articles.GetWebpage(nextPageString);
                         if (nextPage == null) {
-                            WikipediaWebRequest r = new WikipediaWebRequest(nextPageString, Articles);
-                            nextPage = Articles.GetWebpage(nextPageString);
+                            continue;
                         }
                         PathTaken.Push(nextPage);
                         answerFound = checkIfAnswerFound(nextPage);
@@ -69,7 +68,7 @@ public class WikipediaSearcher
     }
 
     private bool checkIfAnswerFound(Webpage page) {
-        Webpage temp = Articles.GetWebpage(FinishPage);
+        Webpage temp = Articles.WebpageInDictionary(FinishPage);
         if (temp == null) {
             return false;
         }

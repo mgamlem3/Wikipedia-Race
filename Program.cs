@@ -7,6 +7,7 @@
 ////////////
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Threading;
@@ -21,11 +22,17 @@ namespace Wikipedia_Race
             // get data for first webpage
             WikipediaWebRequest request = new WikipediaWebRequest(StartPageName, Webpages);          
             if (request.SuccessfulWebRequest()) {
+                List<Thread> threads = new List<Thread>();
                 Console.WriteLine("Creating Searcher....");
                 WikipediaSearcher searcher = null;
-                Thread s = new Thread(() => {searcher = new WikipediaSearcher(Webpages, StartPageName, FinishPageName);});
-                s.Start();
-                s.Join();
+                for (int i = 0; i < 10; i++) {
+                    Thread s = new Thread(() => {searcher = new WikipediaSearcher(Webpages, StartPageName, FinishPageName);});
+                    threads.Add(s);
+                    s.Start();
+                }
+                for (int i = 0; i < 10; i++) {
+                    threads[i].Join();
+                }
             }
         }
 
@@ -86,7 +93,7 @@ namespace Wikipedia_Race
             // Ask for end page
             Console.WriteLine("Which Wikipedia Page would you like to end with?");
             // FinishPageName = Console.ReadLine();
-            FinishPageName = "Americas";
+            FinishPageName = "Dog";
             FinishPageName.Replace(' ', '_');
             
             // check if finish page exists

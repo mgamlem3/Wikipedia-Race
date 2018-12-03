@@ -42,7 +42,7 @@ public class Webpage {
                 continue;
             }
             string link = links_to_add[i];
-            Links.TryAdd(link.ToString(), "https://en.wikipedia.org/wiki/"+link);
+            Links.TryAdd(link.ToString(), "https://en.wikipedia.org/wiki/"+link.TrimEnd('_'));
             WebpagesToBeSearched.Add(link);
         }
      }

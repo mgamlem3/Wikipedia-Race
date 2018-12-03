@@ -22,8 +22,29 @@ public class ArticleCollection {
         Webpage w = null;
         bool success = dictionary.TryGetValue(requestedPage, out w);
         if (!success) {
+            success = tryToGetWebpage(requestedPage);
+        }
+        if (!success) {
             return null;
         }
         return w;
+    }
+    
+    public Webpage WebpageInDictionary(string requestedPage) {
+        Webpage w = null;
+        bool success = dictionary.TryGetValue(requestedPage, out w);
+        if (!success) {
+            return null;
+        }
+        return w;
+    }
+    private bool tryToGetWebpage(string requestedPage) {
+        WikipediaWebRequest r = new WikipediaWebRequest(requestedPage, this);
+        if (r == null) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 }

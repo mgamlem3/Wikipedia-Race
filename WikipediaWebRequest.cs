@@ -35,7 +35,7 @@ public class WikipediaWebRequest
     }
 
     private void Controller() {
-        Webpage temp = Articles.GetWebpage(RequestedPage);
+        Webpage temp = Articles.WebpageInDictionary(RequestedPage);
         if (temp == null) {
             string response = NavigateToWebpage();
             if (response != null) {
@@ -61,7 +61,7 @@ public class WikipediaWebRequest
 
         }
         catch (WebException e) {
-            Console.WriteLine("\nWebException Caught!");
+            Console.WriteLine("\nWebException Caught! Page: "+RequestedPage);
             Console.WriteLine("Message: " + e.ToString());
             return null;
         }
