@@ -91,7 +91,7 @@ public class WikipediaWebRequest
             unordered_links.Add(groups[1].ToString());
             // Console.WriteLine(groups[1].ToString());
         }
-        Webpage newWebpage = new Webpage(title_match.Groups[1].ToString(), unordered_links);
+        Webpage newWebpage = new Webpage(title_match.Groups[1].ToString(), unordered_links, ref webpages);
 
         // add webpage to master list
         webpages.TryAdd(newWebpage.Title, newWebpage);
