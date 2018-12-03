@@ -17,7 +17,7 @@ public class WikipediaSearcher
 
     WikipediaSearcher() {}
 
-    WikipediaSearcher(ref ConcurrentDictionary<string, Webpage> Webpages, string Start, string Finish) {
+    public WikipediaSearcher(ref ConcurrentDictionary<string, Webpage> Webpages, string Start, string Finish) {
         StartPage = Start;
         FinishPage = Finish;
         Search(ref Webpages);
@@ -33,24 +33,29 @@ public class WikipediaSearcher
 
         while(PathTaken.Count > 0) {
             currentPage = PathTaken.Peek();
-            
-            // get next page to be searched
-            successfulTake = currentPage.WebpagesToBeSearched.TryTake(out nextPageString);
+                // get next page to be searched
+                try {
+                    successfulTake = currentPage.WebpagesToBeSearched.TryTake(out nextPageString);
 
-            if (successfulTake) {
-                Webpages.TryGetValue(nextPageString, out nextPage);
-                PathTaken.Push(nextPage);
-                answerFound = checkIfAnswerFound(nextPage, ref Webpages);
-                if (answerFound){
-                    break;
+                    if (successfulTake) {
+                        Webpages.TryGetValue(nextPageString, out nextPage);
+                        PathTaken.Push(nextPage);
+                        answerFound = checkIfAnswerFound(nextPage, ref Webpages);
+                        if (answerFound){
+                            break;
+                        }
+                    }
+                    else {
+                        PathTaken.Pop();
+                    }
+                    if (PathTaken.Count >= 30) {
+                        PathTaken.Pop();
+                    }
+                } catch (NullReferenceException e) {
+                    Console.WriteLine("No webpages have been located yet. " + e);
+                    WikipediaWebRequest r = new WikipediaWebRequest(StartPage, ref Webpages);
+                    Webpages.TryGetValue(StartPage, out currentPage);
                 }
-            }
-            else {
-                PathTaken.Pop();
-            }
-            if (PathTaken.Count >= 30) {
-                PathTaken.Pop();
-            }
         }
 
         PrintResults(answerFound);

@@ -76,13 +76,12 @@ public class WikipediaWebRequest
     // creates new webpage if successfully parsed
     private void ParseResposne(string responseHTML, ref ConcurrentDictionary<string, Webpage> webpages) {
         Match title_match = TITLE_REGEX.Match(responseHTML);
-        MatchCollection links_match = Regex.Matches(responseHTML, LINK_REGEX_PATTERN);//LINK_REGEX.Match(responseHTML);
+        MatchCollection links_match = Regex.Matches(responseHTML, LINK_REGEX_PATTERN);
 
-        Console.WriteLine("Title\n" + title_match.Groups[1].ToString());
+        // Console.WriteLine("Title\n" + title_match.Groups[1].ToString());
 
         List<string> unordered_links = new List<string>();
 
-        Console.WriteLine("Link Matches");
         // gather all matches from webpage
         foreach (Match match in links_match) {
             // gather all match groups from current match

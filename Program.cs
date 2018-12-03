@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Wikipedia_Race
@@ -16,12 +17,20 @@ namespace Wikipedia_Race
     class Program
     {
         // search for the finishing website
-        void searchForWebsite(string StartPageName, string FinishPageName, ref ConcurrentDictionary<string, Webpage> Webpages) {
+        void searchForWebsite(string StartPageName, string FinishPageName, ConcurrentDictionary<string, Webpage> Webpages) {
             // get data for first webpage
-            WikipediaWebRequest request = new WikipediaWebRequest(StartPageName, ref Webpages);
-            if (request.SuccessfulWebRequest()) {
-                
-            }
+            WikipediaWebRequest request = null;
+            Thread t = new Thread(() => {request = new WikipediaWebRequest(StartPageName, ref Webpages);});          
+            // Thread.Sleep(5000);
+            // if (request.SuccessfulWebRequest()) {
+            // t.Start();
+            Console.WriteLine("Creating Searcher....");
+            WikipediaSearcher searcher = null;
+            Thread s = new Thread(() => {searcher = new WikipediaSearcher(ref Webpages, StartPageName, FinishPageName);});
+            // t.Join();
+            s.Start();
+            s.Join();
+            // }
         }
 
         private bool checkIfPageExists(string page) {
@@ -70,7 +79,8 @@ namespace Wikipedia_Race
             
             // Ask for start page
             Console.WriteLine("Welcome\nWhich Wikipedia Page would you like to begin at?");
-            StartPageName = Console.ReadLine();
+            // StartPageName = Console.ReadLine();
+            StartPageName = "United States";
             StartPageName.Replace(' ', '_');
 
             // check if start page exists
@@ -79,7 +89,8 @@ namespace Wikipedia_Race
 
             // Ask for end page
             Console.WriteLine("Which Wikipedia Page would you like to end with?");
-            FinishPageName = Console.ReadLine();
+            // FinishPageName = Console.ReadLine();
+            FinishPageName = "Dog";
             FinishPageName.Replace(' ', '_');
             
             // check if finish page exists
@@ -89,7 +100,7 @@ namespace Wikipedia_Race
             // if (await StartExists == true && await FinishExists == true) {
             if (StartExists && FinishExists) {
                 // WikipediaWebRequest request = new WikipediaWebRequest(StartPageName, ref Webpages);
-                searchForWebsite(StartPageName, FinishPageName, ref Webpages);
+                searchForWebsite(StartPageName, FinishPageName, Webpages);
             }
             else {
                 Console.WriteLine("Unknown Error");
