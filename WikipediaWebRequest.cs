@@ -72,8 +72,7 @@ public class WikipediaWebRequest
         }
     }
 
-    // searches response HTML for data that will be used
-    //    links and page title
+    // searches response HTML for data that will be used links and page title
     // input: raw HTML response, reference to master webpage list
     // output: 
     // creates new webpage if successfully parsed

@@ -86,7 +86,7 @@ namespace Wikipedia_Race
             // Ask for end page
             Console.WriteLine("Which Wikipedia Page would you like to end with?");
             // FinishPageName = Console.ReadLine();
-            FinishPageName = "Dog";
+            FinishPageName = "Americas";
             FinishPageName.Replace(' ', '_');
             
             // check if finish page exists

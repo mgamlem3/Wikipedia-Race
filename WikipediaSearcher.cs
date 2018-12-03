@@ -42,6 +42,10 @@ public class WikipediaSearcher
 
                     if (successfulTake) {
                         nextPage = Articles.GetWebpage(nextPageString);
+                        if (nextPage == null) {
+                            WikipediaWebRequest r = new WikipediaWebRequest(nextPageString, Articles);
+                            nextPage = Articles.GetWebpage(nextPageString);
+                        }
                         PathTaken.Push(nextPage);
                         answerFound = checkIfAnswerFound(nextPage);
                         if (answerFound){

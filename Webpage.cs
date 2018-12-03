@@ -38,6 +38,9 @@ public class Webpage {
     // outputs:
      private void addLinks(List<string> links_to_add) {
         for(var i = 0; i < links_to_add.Count; i++) {
+            if (links_to_add[i].ToLower().Contains("wikipedia")) {
+                continue;
+            }
             string link = links_to_add[i];
             Links.TryAdd(link.ToString(), "https://en.wikipedia.org/wiki/"+link);
             WebpagesToBeSearched.Add(link);

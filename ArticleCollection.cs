@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
 public class ArticleCollection {
-    private ConcurrentDictionary<string, Webpage> dictionary;
+    private ConcurrentDictionary<string, Webpage> dictionary = new ConcurrentDictionary<string, Webpage>();
     public ArticleCollection() {}
 
     public void AddWebpage(Webpage w) {
