@@ -24,19 +24,22 @@ public class WikipediaWebRequest
     private const string LINK_REGEX_PATTERN =  @"(?:<a href=\D\/wiki\/)([\w]+)";
     private Regex TITLE_REGEX = new Regex(TITLE_REGEX_PATTERN, RegexOptions.IgnoreCase);
 
+    private ArticleCollection Articles = null;
+
     public WikipediaWebRequest() {}
 
-    public WikipediaWebRequest(string requested_page, ref ConcurrentDictionary<string, Webpage> webpages) {
+    public WikipediaWebRequest(string requested_page, ArticleCollection Webpages) {
         RequestedPage = requested_page;
-        Controller(ref webpages);
+        Articles = Webpages;
+        Controller();
     }
 
-    private void Controller(ref ConcurrentDictionary<string, Webpage> webpages) {
-        Webpage temp;
-        if (!webpages.TryGetValue(RequestedPage, out temp)) {
+    private void Controller() {
+        Webpage temp = Articles.GetWebpage(RequestedPage);
+        if (temp == null) {
             string response = NavigateToWebpage();
             if (response != null) {
-                ParseResposne(response, ref webpages);
+                ParseResposne(response);
             }
         }
     }
@@ -74,7 +77,7 @@ public class WikipediaWebRequest
     // input: raw HTML response, reference to master webpage list
     // output: 
     // creates new webpage if successfully parsed
-    private void ParseResposne(string responseHTML, ref ConcurrentDictionary<string, Webpage> webpages) {
+    private void ParseResposne(string responseHTML) {
         Match title_match = TITLE_REGEX.Match(responseHTML);
         MatchCollection links_match = Regex.Matches(responseHTML, LINK_REGEX_PATTERN);
 
@@ -90,10 +93,10 @@ public class WikipediaWebRequest
             unordered_links.Add(groups[1].ToString());
             // Console.WriteLine(groups[1].ToString());
         }
-        Webpage newWebpage = new Webpage(title_match.Groups[1].ToString(), unordered_links, ref webpages);
+        Webpage newWebpage = new Webpage(title_match.Groups[1].ToString(), unordered_links);
 
         // add webpage to master list
-        webpages.TryAdd(newWebpage.Title, newWebpage);
+        Articles.AddWebpage(newWebpage);
     }
 
     // used to determine if webpage naviagation was successful

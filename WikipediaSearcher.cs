@@ -15,20 +15,23 @@ public class WikipediaSearcher
     private string StartPage;
     private string FinishPage;
 
+    private ArticleCollection Articles;
+
     WikipediaSearcher() {}
 
-    public WikipediaSearcher(ref ConcurrentDictionary<string, Webpage> Webpages, string Start, string Finish) {
+    public WikipediaSearcher(ArticleCollection Webpages, string Start, string Finish) {
         StartPage = Start;
         FinishPage = Finish;
-        Search(ref Webpages);
+        Articles = Webpages;
+        Search();
     }
 
-    private void Search(ref ConcurrentDictionary<string, Webpage> Webpages) {
+    private void Search() {
         Webpage currentPage, nextPage;
         string nextPageString;
         bool successfulTake, answerFound = false;
 
-        Webpages.TryGetValue(StartPage, out currentPage);
+        currentPage = Articles.GetWebpage(StartPage);
         PathTaken.Push(currentPage);
 
         while(PathTaken.Count > 0) {
@@ -38,9 +41,9 @@ public class WikipediaSearcher
                     successfulTake = currentPage.WebpagesToBeSearched.TryTake(out nextPageString);
 
                     if (successfulTake) {
-                        Webpages.TryGetValue(nextPageString, out nextPage);
+                        nextPage = Articles.GetWebpage(nextPageString);
                         PathTaken.Push(nextPage);
-                        answerFound = checkIfAnswerFound(nextPage, ref Webpages);
+                        answerFound = checkIfAnswerFound(nextPage);
                         if (answerFound){
                             break;
                         }
@@ -53,18 +56,22 @@ public class WikipediaSearcher
                     }
                 } catch (NullReferenceException e) {
                     Console.WriteLine("No webpages have been located yet. " + e);
-                    WikipediaWebRequest r = new WikipediaWebRequest(StartPage, ref Webpages);
-                    Webpages.TryGetValue(StartPage, out currentPage);
+                    WikipediaWebRequest r = new WikipediaWebRequest(StartPage, Articles);
+                    currentPage = Articles.GetWebpage(StartPage);
                 }
         }
 
         PrintResults(answerFound);
     }
 
-    private bool checkIfAnswerFound(Webpage page, ref ConcurrentDictionary<string, Webpage> Webpages) {
-        Webpage temp;
-        
-        return Webpages.TryGetValue(FinishPage, out temp);
+    private bool checkIfAnswerFound(Webpage page) {
+        Webpage temp = Articles.GetWebpage(FinishPage);
+        if (temp == null) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
     private void PrintResults(bool answerFound) {

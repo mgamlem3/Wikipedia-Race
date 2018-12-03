@@ -17,20 +17,16 @@ namespace Wikipedia_Race
     class Program
     {
         // search for the finishing website
-        void searchForWebsite(string StartPageName, string FinishPageName, ConcurrentDictionary<string, Webpage> Webpages) {
+        void searchForWebsite(string StartPageName, string FinishPageName, ArticleCollection Webpages) {
             // get data for first webpage
-            WikipediaWebRequest request = null;
-            Thread t = new Thread(() => {request = new WikipediaWebRequest(StartPageName, ref Webpages);});          
-            // Thread.Sleep(5000);
-            // if (request.SuccessfulWebRequest()) {
-            // t.Start();
-            Console.WriteLine("Creating Searcher....");
-            WikipediaSearcher searcher = null;
-            Thread s = new Thread(() => {searcher = new WikipediaSearcher(ref Webpages, StartPageName, FinishPageName);});
-            // t.Join();
-            s.Start();
-            s.Join();
-            // }
+            WikipediaWebRequest request = new WikipediaWebRequest(StartPageName, Webpages);          
+            if (request.SuccessfulWebRequest()) {
+                Console.WriteLine("Creating Searcher....");
+                WikipediaSearcher searcher = null;
+                Thread s = new Thread(() => {searcher = new WikipediaSearcher(Webpages, StartPageName, FinishPageName);});
+                s.Start();
+                s.Join();
+            }
         }
 
         private bool checkIfPageExists(string page) {
@@ -69,7 +65,7 @@ namespace Wikipedia_Race
         // async void Run() {
         void Run() {
             // stores master list of webpages
-            ConcurrentDictionary<string, Webpage> Webpages = new ConcurrentDictionary<string, Webpage>();
+            ArticleCollection Articles = new ArticleCollection();
             // Task<bool> StartExists;
             bool StartExists;
             // Task<bool> FinishExists;
@@ -100,7 +96,7 @@ namespace Wikipedia_Race
             // if (await StartExists == true && await FinishExists == true) {
             if (StartExists && FinishExists) {
                 // WikipediaWebRequest request = new WikipediaWebRequest(StartPageName, ref Webpages);
-                searchForWebsite(StartPageName, FinishPageName, Webpages);
+                searchForWebsite(StartPageName, FinishPageName, Articles);
             }
             else {
                 Console.WriteLine("Unknown Error");
