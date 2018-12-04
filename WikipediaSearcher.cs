@@ -9,21 +9,26 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 public class WikipediaSearcher
 {
     private Stack<Webpage> PathTaken = new Stack<Webpage>();
     private string StartPage;
     private string FinishPage;
-
     private ArticleCollection Articles;
+    private Stopwatch watch = new Stopwatch();
 
     WikipediaSearcher() {}
 
     public WikipediaSearcher(ArticleCollection Webpages, string Start, string Finish) {
-        StartPage = Start;
-        FinishPage = Finish;
+        StartPage = Start.ToLower();
+        FinishPage = Finish.ToLower();
         Articles = Webpages;
+        
+        watch.Start();
         Search();
+        watch.Stop();
+        Console.WriteLine(watch.ElapsedMilliseconds);
     }
 
     private void Search() {
@@ -54,7 +59,7 @@ public class WikipediaSearcher
                     else {
                         PathTaken.Pop();
                     }
-                    if (PathTaken.Count >= 30) {
+                    if (PathTaken.Count >= 7) {
                         PathTaken.Pop();
                     }
                 } catch (NullReferenceException e) {
@@ -68,13 +73,17 @@ public class WikipediaSearcher
     }
 
     private bool checkIfAnswerFound(Webpage page) {
-        Webpage temp = Articles.WebpageInDictionary(FinishPage);
-        if (temp == null) {
-            return false;
-        }
-        else {
+        // is the current page the answer?
+        Webpage temp = Articles.WebpageInDictionary(FinishPage.ToLower());
+        bool found = false;
+        if (temp != null) {
             return true;
         }
+        else if (temp == null) {
+            // does the current page contain the link to the answer?
+            found = Articles.WebpageContainsLinkToAnswer(page.Title, FinishPage);
+        }
+        return found;
     }
 
     private void PrintResults(bool answerFound) {

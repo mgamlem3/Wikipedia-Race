@@ -20,31 +20,43 @@ public class ArticleCollection {
 
     public Webpage GetWebpage(string requestedPage) {
         Webpage w = null;
-        bool success = dictionary.TryGetValue(requestedPage, out w);
+        bool success = dictionary.TryGetValue(requestedPage.ToLower().Replace("/wiki/", ""), out w);
         if (!success) {
-            success = tryToGetWebpage(requestedPage);
+            success = TryToGetWebpage(requestedPage);
         }
-        if (!success) {
-            return null;
+        if (success) {
+            dictionary.TryGetValue(requestedPage.ToLower().Replace("/wiki/", ""), out w);
+            return w;
         }
-        return w;
+        return null;
     }
     
     public Webpage WebpageInDictionary(string requestedPage) {
         Webpage w = null;
-        bool success = dictionary.TryGetValue(requestedPage, out w);
+        bool success = dictionary.TryGetValue(requestedPage.ToLower(), out w);
         if (!success) {
             return null;
         }
         return w;
     }
-    private bool tryToGetWebpage(string requestedPage) {
-        WikipediaWebRequest r = new WikipediaWebRequest(requestedPage, this);
+    // change to return title instead of bool
+    private bool TryToGetWebpage(string requestedPage) {
+        WikipediaWebRequest r = new WikipediaWebRequest(requestedPage.ToLower(), this);
         if (r == null) {
             return false;
         }
         else {
             return true;
         }
+    }
+
+    public bool WebpageContainsLinkToAnswer(string webpage, string answer) {
+        Webpage w = WebpageInDictionary(webpage);
+        foreach (var value in w.Links) {
+            if (answer.ToLower() == value.Key.ToLower()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

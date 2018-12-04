@@ -21,7 +21,7 @@ public class WikipediaWebRequest
     private bool Success = false;
 
     private const string TITLE_REGEX_PATTERN = @"(?:<h1[\w\d\s=\D]+>)([\w\d\s]+)(?:<\/h1>)";
-    private const string LINK_REGEX_PATTERN =  @"(?:<a href=\D\/wiki\/)([\w]+)";
+    private const string LINK_REGEX_PATTERN =  @"(?:<a href=\D)(\/wiki\/[\w]+)";
     private Regex TITLE_REGEX = new Regex(TITLE_REGEX_PATTERN, RegexOptions.IgnoreCase);
 
     private ArticleCollection Articles = null;
@@ -50,7 +50,7 @@ public class WikipediaWebRequest
     private string NavigateToWebpage() {
         try {
             WebClient client = new WebClient();
-            string response = client.DownloadString("https://en.wikipedia.org/wiki/"+RequestedPage);
+            string response = client.DownloadString("https://en.wikipedia.org/"+RequestedPage.Replace(' ', '_'));
             
             if (response != null || response != "") {
                 Success = true;
@@ -92,7 +92,7 @@ public class WikipediaWebRequest
             unordered_links.Add(groups[1].ToString());
             // Console.WriteLine(groups[1].ToString());
         }
-        Webpage newWebpage = new Webpage(title_match.Groups[1].ToString(), unordered_links);
+        Webpage newWebpage = new Webpage(title_match.Groups[1].ToString().ToLower(), unordered_links);
 
         // add webpage to master list
         Articles.AddWebpage(newWebpage);

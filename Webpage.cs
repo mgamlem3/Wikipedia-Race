@@ -15,11 +15,8 @@ public class Webpage {
     private static int ProcessorCount = Environment.ProcessorCount;
     private static int ConcurrencyLevel = ProcessorCount * 2;
     private static int InitialDictionarySize = 50;
-    public ConcurrentDictionary<string, string> Links = new ConcurrentDictionary<string, string>(ConcurrencyLevel, InitialDictionarySize);
+    public ConcurrentDictionary<string, int> Links = new ConcurrentDictionary<string, int>(ConcurrencyLevel, InitialDictionarySize);
     public ConcurrentBag<string> WebpagesToBeSearched = new ConcurrentBag<string>();
-    private static Random rng = new Random();
-    private List<Thread> threads = new List<Thread>();
-    private List<object> ThreadReturn = new List<object>();
 
     // default constructor
     // not used
@@ -29,7 +26,7 @@ public class Webpage {
     // input: title (string) of webpage & list of one or more links from the webpage
     // output: new webpage object
      public Webpage(string new_title, List<string> new_links) {
-         Title = new_title;
+         Title = new_title.ToLower();
          addLinks(new_links);
      }
 
@@ -41,8 +38,8 @@ public class Webpage {
             if (links_to_add[i].ToLower().Contains("wikipedia")) {
                 continue;
             }
-            string link = links_to_add[i];
-            Links.TryAdd(link.ToString(), "https://en.wikipedia.org/wiki/"+link.TrimEnd('_'));
+            string link = links_to_add[i].TrimEnd('_').ToLower();
+            Links.AddOrUpdate(link, 0, (key, oldValue) => oldValue++);
             WebpagesToBeSearched.Add(link);
         }
      }

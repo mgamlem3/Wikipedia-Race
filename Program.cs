@@ -20,19 +20,20 @@ namespace Wikipedia_Race
         // search for the finishing website
         void searchForWebsite(string StartPageName, string FinishPageName, ArticleCollection Webpages) {
             // get data for first webpage
-            WikipediaWebRequest request = new WikipediaWebRequest(StartPageName, Webpages);          
+            WikipediaWebRequest request = new WikipediaWebRequest("wiki/"+StartPageName, Webpages);          
             if (request.SuccessfulWebRequest()) {
                 List<Thread> threads = new List<Thread>();
                 Console.WriteLine("Creating Searcher....");
                 WikipediaSearcher searcher = null;
-                for (int i = 0; i < 10; i++) {
+                // for (int i = 0; i < 10; i++) {
                     Thread s = new Thread(() => {searcher = new WikipediaSearcher(Webpages, StartPageName, FinishPageName);});
-                    threads.Add(s);
+                    // threads.Add(s);
                     s.Start();
-                }
-                for (int i = 0; i < 10; i++) {
-                    threads[i].Join();
-                }
+                    s.Join();
+                // }
+                // for (int i = 0; i < 10; i++) {
+                    // threads[i].Join();
+                // }
             }
         }
 
@@ -93,7 +94,7 @@ namespace Wikipedia_Race
             // Ask for end page
             Console.WriteLine("Which Wikipedia Page would you like to end with?");
             // FinishPageName = Console.ReadLine();
-            FinishPageName = "Dog";
+            FinishPageName = "Liverpool";
             FinishPageName.Replace(' ', '_');
             
             // check if finish page exists
