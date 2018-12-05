@@ -12,10 +12,16 @@ using System.Collections.Concurrent;
 
 public class ArticleCollection {
     private ConcurrentDictionary<string, Webpage> dictionary = new ConcurrentDictionary<string, Webpage>();
+    private ConcurrentBag<Webpage> LinksToCrawl = new ConcurrentBag<Webpage>();
     public ArticleCollection() {}
 
     public void AddWebpage(Webpage w) {
         dictionary.TryAdd(w.Title, w);
+        LinksToCrawl.Add(w);
+    }
+
+    public ConcurrentBag<Webpage> GetLinksToCrawl() {
+        return LinksToCrawl;
     }
 
     public Webpage GetWebpage(string requestedPage) {
@@ -39,7 +45,7 @@ public class ArticleCollection {
         }
         return w;
     }
-    // change to return title instead of bool
+
     private bool TryToGetWebpage(string requestedPage) {
         WikipediaWebRequest r = new WikipediaWebRequest(requestedPage.ToLower(), this);
         if (r == null) {

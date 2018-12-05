@@ -32,6 +32,7 @@ public class WikipediaSearcher
     }
 
     private void Search() {
+        ArticleCrawler crawler = new ArticleCrawler(Articles);
         Webpage currentPage, nextPage;
         string nextPageString;
         bool successfulTake, answerFound = false;
@@ -68,7 +69,7 @@ public class WikipediaSearcher
                     currentPage = Articles.GetWebpage(StartPage);
                 }
         }
-
+        crawler.QuitArticleCrawler();
         PrintResults(answerFound);
     }
 
