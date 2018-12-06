@@ -10,22 +10,26 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
+
 public class ArticleCrawler
 {
     private ArticleCollection Articles;
     private bool exit = false;
+    private int threadCount = 0;
+    private const int MAXTHREADS = 10;
 
     private ArticleCrawler() {}
 
     public ArticleCrawler(ArticleCollection c) {
         Articles = c;
-        Controller();
     }
 
-    private void Controller() {
+    public void Start() {
         while (!exit) {
             Crawl();
         }
+        Console.WriteLine("exiting crawler");
     }
 
     private void Crawl() {
@@ -38,10 +42,15 @@ public class ArticleCrawler
                 else {
                     bool threadCreated = false;
                     while (threadCreated == false) {
+                        if (threadCount >= MAXTHREADS) {
+                            Thread.Sleep(2000);
+                            continue;
+                        }
                         try {
-                            Console.WriteLine("passing: "+link);
-                            ThreadPool.QueueUserWorkItem(GetPage, link);
+                            WaitCallback callback = new WaitCallback(GetPage);
+                            ThreadPool.QueueUserWorkItem(callback, link);
                             threadCreated = true;
+                            threadCount++;
                         } catch (OutOfMemoryException e) {
                             Console.WriteLine("Not enough memory to create thread... Will wait and try again..." + e);
                             Thread.Sleep(500);
@@ -49,6 +58,8 @@ public class ArticleCrawler
                     }
                 }
             }
+            Console.WriteLine("sleeping");
+            Thread.Sleep(10000);
         }
     }
 
@@ -58,6 +69,7 @@ public class ArticleCrawler
         if (w == null) {
             Console.WriteLine("requesting: "+str);
             WikipediaWebRequest r = new WikipediaWebRequest(str, Articles);
+            threadCount--;
         }
     }
 

@@ -6,6 +6,8 @@
 // Refer to License for Use Terms
 ////////////
 
+using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
@@ -16,6 +18,7 @@ public class ArticleCollection {
     public ArticleCollection() {}
 
     public void AddWebpage(Webpage w) {
+        Console.WriteLine("adding webpage "+w.Title);
         dictionary.TryAdd(w.Title, w);
         LinksToCrawl.Add(w);
     }
@@ -26,12 +29,12 @@ public class ArticleCollection {
 
     public Webpage GetWebpage(string requestedPage) {
         Webpage w = null;
-        bool success = dictionary.TryGetValue(requestedPage.ToLower().Replace("/wiki/", ""), out w);
+        bool success = dictionary.TryGetValue(requestedPage.Replace("/wiki/", "").ToLower(), out w);
         if (!success) {
             success = TryToGetWebpage(requestedPage);
         }
         if (success) {
-            dictionary.TryGetValue(requestedPage.ToLower().Replace("/wiki/", ""), out w);
+            dictionary.TryGetValue(requestedPage.Replace("/wiki/", "").ToLower(), out w);
             return w;
         }
         return null;
@@ -39,6 +42,10 @@ public class ArticleCollection {
     
     public Webpage WebpageInDictionary(string requestedPage) {
         Webpage w = null;
+        if (requestedPage.Contains("wiki/")) {
+            requestedPage = requestedPage.Remove(0, 5);
+        }
+        requestedPage = requestedPage.Replace("_", " ").ToLower();
         bool success = dictionary.TryGetValue(requestedPage.ToLower(), out w);
         if (!success) {
             return null;
@@ -47,7 +54,7 @@ public class ArticleCollection {
     }
 
     private bool TryToGetWebpage(string requestedPage) {
-        WikipediaWebRequest r = new WikipediaWebRequest(requestedPage.ToLower(), this);
+        WikipediaWebRequest r = new WikipediaWebRequest(requestedPage, this);
         if (r == null) {
             return false;
         }

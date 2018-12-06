@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading;
 public class WikipediaSearcher
 {
     private Stack<Webpage> PathTaken = new Stack<Webpage>();
@@ -21,8 +22,8 @@ public class WikipediaSearcher
     WikipediaSearcher() {}
 
     public WikipediaSearcher(ArticleCollection Webpages, string Start, string Finish) {
-        StartPage = Start.ToLower();
-        FinishPage = Finish.ToLower();
+        StartPage = Start;
+        FinishPage = Finish;
         Articles = Webpages;
         
         watch.Start();
@@ -32,13 +33,14 @@ public class WikipediaSearcher
     }
 
     private void Search() {
-        ArticleCrawler crawler = new ArticleCrawler(Articles);
         Webpage currentPage, nextPage;
         string nextPageString;
         bool successfulTake, answerFound = false;
 
         currentPage = Articles.GetWebpage(StartPage);
-        PathTaken.Push(currentPage);
+        if (currentPage != null) {
+            PathTaken.Push(currentPage);
+        }
 
         while(PathTaken.Count > 0) {
             currentPage = PathTaken.Peek();
@@ -69,13 +71,13 @@ public class WikipediaSearcher
                     currentPage = Articles.GetWebpage(StartPage);
                 }
         }
-        crawler.QuitArticleCrawler();
         PrintResults(answerFound);
     }
 
     private bool checkIfAnswerFound(Webpage page) {
         // is the current page the answer?
-        Webpage temp = Articles.WebpageInDictionary(FinishPage.ToLower());
+        Console.WriteLine("Checking For Answer");
+        Webpage temp = Articles.WebpageInDictionary(FinishPage);
         bool found = false;
         if (temp != null) {
             return true;
@@ -92,7 +94,7 @@ public class WikipediaSearcher
             Console.WriteLine("Answer Found!");
             Array answerPath = PathTaken.ToArray();
             foreach(Webpage page in answerPath) {
-                Console.WriteLine(page.Title);
+                Console.WriteLine("https://en.wikipedia.org/wiki/{0}", page.Title.Replace(" ", "_"));
             }
         }
         else {

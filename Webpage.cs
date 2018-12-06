@@ -26,7 +26,7 @@ public class Webpage {
     // input: title (string) of webpage & list of one or more links from the webpage
     // output: new webpage object
      public Webpage(string new_title, List<string> new_links) {
-         Title = new_title.ToLower();
+         Title = new_title;
          addLinks(new_links);
      }
 
@@ -38,7 +38,7 @@ public class Webpage {
             if (links_to_add[i].ToLower().Contains("wikipedia")) {
                 continue;
             }
-            string link = links_to_add[i].TrimEnd('_').ToLower();
+            string link = links_to_add[i].TrimEnd('_');
             Links.AddOrUpdate(link, 0, (key, oldValue) => oldValue++);
             WebpagesToBeSearched.Add(link);
         }

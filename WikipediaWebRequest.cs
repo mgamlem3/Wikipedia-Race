@@ -20,8 +20,8 @@ public class WikipediaWebRequest
     private string RequestedPage;
     private bool Success = false;
 
-    private const string TITLE_REGEX_PATTERN = @"(?:<h1[\w\d\s=\D]+>)([\w\d\s]+)(?:<\/h1>)";
-    private const string LINK_REGEX_PATTERN =  @"(?:<a href=\D)(\/wiki\/[\w]+)";
+    private const string TITLE_REGEX_PATTERN = @"(?:<h1[\w\d\s=\D]+>)([\w\d\s\-\:]+)(?:<\/h1>)";
+    private const string LINK_REGEX_PATTERN =  @"(?:<a href=\D)(\/wiki\/[\w\d\-\:\?]+)";
     private Regex TITLE_REGEX = new Regex(TITLE_REGEX_PATTERN, RegexOptions.IgnoreCase);
 
     private ArticleCollection Articles = null;
@@ -29,7 +29,10 @@ public class WikipediaWebRequest
     public WikipediaWebRequest() {}
 
     public WikipediaWebRequest(string requested_page, ArticleCollection Webpages) {
-        RequestedPage = requested_page;
+        RequestedPage = requested_page.Replace(' ', '_');
+        if (!RequestedPage.Contains("wiki/")) {
+            RequestedPage.Insert(0, "wiki/");
+        }
         Articles = Webpages;
         Controller();
     }
@@ -50,9 +53,9 @@ public class WikipediaWebRequest
     private string NavigateToWebpage() {
         try {
             WebClient client = new WebClient();
-            string response = client.DownloadString("https://en.wikipedia.org/"+RequestedPage.Replace(' ', '_'));
+            string response = client.DownloadString("https://en.wikipedia.org/"+RequestedPage);
             
-            if (response != null || response != "") {
+            if (response != null && response != "") {
                 Success = true;
                 return response;
             }
@@ -80,8 +83,6 @@ public class WikipediaWebRequest
         Match title_match = TITLE_REGEX.Match(responseHTML);
         MatchCollection links_match = Regex.Matches(responseHTML, LINK_REGEX_PATTERN);
 
-        // Console.WriteLine("Title\n" + title_match.Groups[1].ToString());
-
         List<string> unordered_links = new List<string>();
 
         // gather all matches from webpage
@@ -89,8 +90,10 @@ public class WikipediaWebRequest
             // gather all match groups from current match
             GroupCollection groups = match.Groups;
             // only save the matching group, discard non-matching groups
+            if (groups[1].ToString().ToLower().Contains("wiki/help") || groups[1].ToString().ToLower().Contains("wiki/portal")) {
+                continue;
+            }
             unordered_links.Add(groups[1].ToString());
-            // Console.WriteLine(groups[1].ToString());
         }
         Webpage newWebpage = new Webpage(title_match.Groups[1].ToString().ToLower(), unordered_links);
 
