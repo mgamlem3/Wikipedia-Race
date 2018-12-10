@@ -15,14 +15,16 @@ using System.Threading.Tasks;
 public class ArticleCrawler
 {
     private ArticleCollection Articles;
+    private ForbiddenLinks ForbiddenLinksCollection;
     private bool exit = false;
     private int threadCount = 0;
     private const int MAXTHREADS = 10;
 
     private ArticleCrawler() {}
 
-    public ArticleCrawler(ArticleCollection c) {
+    public ArticleCrawler(ArticleCollection c, ForbiddenLinks l) {
         Articles = c;
+        ForbiddenLinksCollection = l;
     }
 
     public void Start() {
@@ -68,7 +70,7 @@ public class ArticleCrawler
         Webpage w = Articles.WebpageInDictionary(str);
         if (w == null) {
             Console.WriteLine("requesting: "+str);
-            WikipediaWebRequest r = new WikipediaWebRequest(str, Articles);
+            WikipediaWebRequest r = new WikipediaWebRequest(str, Articles, ForbiddenLinksCollection);
             threadCount--;
         }
     }

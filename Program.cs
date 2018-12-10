@@ -18,17 +18,17 @@ namespace Wikipedia_Race
     class Program
     {
         // search for the finishing website
-        void searchForWebsite(string StartPageName, string FinishPageName, ArticleCollection Webpages) {
+        void searchForWebsite(string StartPageName, string FinishPageName, ArticleCollection Webpages, ForbiddenLinks Forbidden) {
             // get data for first webpage
-            WikipediaWebRequest request = new WikipediaWebRequest("wiki/"+StartPageName, Webpages);          
+            WikipediaWebRequest request = new WikipediaWebRequest("wiki/"+StartPageName, Webpages, Forbidden);          
             if (request.SuccessfulWebRequest()) {
                 Console.WriteLine("Creating Searcher....");
                 WikipediaSearcher s = null;
-                Thread searcher = new Thread(() => {s = new WikipediaSearcher(Webpages, StartPageName, FinishPageName);});
+                Thread searcher = new Thread(() => {s = new WikipediaSearcher(Webpages, StartPageName, FinishPageName, Forbidden);});
                 searcher.Start();
                 searcher.Priority = ThreadPriority.AboveNormal;
 
-                ArticleCrawler c = new ArticleCrawler(Webpages);
+                ArticleCrawler c = new ArticleCrawler(Webpages, Forbidden);
 
                 Thread crawler = new Thread(() => c.Start());
                 crawler.Start();
@@ -45,7 +45,6 @@ namespace Wikipedia_Race
             try {   
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://www.wikipedia.org/wiki/"+page);
                 request.Method = WebRequestMethods.Http.Get;
-                // response = Task.Factory.FromAsync(request.BeginGetResponse, asyncResult => request.EndGetResponse(asyncResult),(object)null);
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 status = response.StatusCode;
                 return status.Equals(HttpStatusCode.OK);
@@ -75,8 +74,10 @@ namespace Wikipedia_Race
         }
         // async void Run() {
         void Run() {
+            // stores list of links not to search
+            ForbiddenLinks ForbiddenLinksCollection = new ForbiddenLinks();
             // stores master list of webpages
-            ArticleCollection Articles = new ArticleCollection();
+            ArticleCollection Articles = new ArticleCollection(ForbiddenLinksCollection);
             // Task<bool> StartExists;
             bool StartExists;
             // Task<bool> FinishExists;
@@ -97,7 +98,7 @@ namespace Wikipedia_Race
             // Ask for end page
             Console.WriteLine("Which Wikipedia Page would you like to end with?");
             // FinishPageName = Console.ReadLine();
-            FinishPageName = "Midway Atoll";
+            FinishPageName = "Federation";
             FinishPageName.Replace(' ', '_');
             
             // check if finish page exists
@@ -107,7 +108,7 @@ namespace Wikipedia_Race
             // if (await StartExists == true && await FinishExists == true) {
             if (StartExists && FinishExists) {
                 // WikipediaWebRequest request = new WikipediaWebRequest(StartPageName, ref Webpages);
-                searchForWebsite(StartPageName, FinishPageName, Articles);
+                searchForWebsite(StartPageName, FinishPageName, Articles, ForbiddenLinksCollection);
             }
             else {
                 Console.WriteLine("Unknown Error");

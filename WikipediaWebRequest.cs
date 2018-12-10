@@ -20,6 +20,8 @@ public class WikipediaWebRequest
     private string RequestedPage;
     private bool Success = false;
 
+    private ForbiddenLinks ForbiddenLinkCollection;
+
     private const string TITLE_REGEX_PATTERN = @"(?:<h1[\w\d\s=\D]+>)([\w\d\s\-\:]+)(?:<\/h1>)";
     private const string LINK_REGEX_PATTERN =  @"(?:<a href=\D)(\/wiki\/[\w\d\-\:\?]+)";
     private Regex TITLE_REGEX = new Regex(TITLE_REGEX_PATTERN, RegexOptions.IgnoreCase);
@@ -28,12 +30,13 @@ public class WikipediaWebRequest
 
     public WikipediaWebRequest() {}
 
-    public WikipediaWebRequest(string requested_page, ArticleCollection Webpages) {
+    public WikipediaWebRequest(string requested_page, ArticleCollection Webpages, ForbiddenLinks l) {
         RequestedPage = requested_page.Replace(' ', '_');
         if (!RequestedPage.Contains("wiki/")) {
             RequestedPage.Insert(0, "wiki/");
         }
         Articles = Webpages;
+        ForbiddenLinkCollection = l;
         Controller();
     }
 
@@ -89,10 +92,11 @@ public class WikipediaWebRequest
         foreach (Match match in links_match) {
             // gather all match groups from current match
             GroupCollection groups = match.Groups;
-            // only save the matching group, discard non-matching groups
-            if (groups[1].ToString().ToLower().Contains("wiki/help") || groups[1].ToString().ToLower().Contains("wiki/portal")) {
+            // check to see if it is a valid link that we want to visit.
+            if (!ForbiddenLinkCollection.CheckLink(groups[1].ToString().ToLower())) {
                 continue;
             }
+            // only save the matching group, discard non-matching groups
             unordered_links.Add(groups[1].ToString());
         }
         Webpage newWebpage = new Webpage(title_match.Groups[1].ToString().ToLower(), unordered_links);

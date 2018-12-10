@@ -18,21 +18,55 @@ public class WikipediaSearcher
     private string FinishPage;
     private ArticleCollection Articles;
     private Stopwatch watch = new Stopwatch();
+    private ForbiddenLinks ForbiddenLinksCollection;
 
     WikipediaSearcher() {}
 
-    public WikipediaSearcher(ArticleCollection Webpages, string Start, string Finish) {
+    public WikipediaSearcher(ArticleCollection Webpages, string Start, string Finish, ForbiddenLinks l) {
         StartPage = Start;
         FinishPage = Finish;
         Articles = Webpages;
+        ForbiddenLinksCollection = l;
         
         watch.Start();
-        Search();
+        SearchDFS();
         watch.Stop();
         Console.WriteLine(watch.ElapsedMilliseconds);
     }
 
-    private void Search() {
+    private void SearchBFS() {
+        Webpage currentPage, nextPage;
+        string nextPageString;
+        bool successfulTake, answerFound = false;
+
+        currentPage = Articles.GetWebpage(StartPage);
+        // get first page
+            // pop all webpages to be searched
+            // put on q
+                // when webpage exhausted push to path taken
+                    // pop off q and search that page pages to be searched
+                    // put on q
+                    // when webpage exhausted put on q
+
+        while (currentPage != null) {
+            PathTaken.Push(currentPage);
+            foreach (string w in currentPage.WebpagesToBeSearched) {
+                nextPage = Articles.GetWebpage(w);
+                if (nextPage != null) {
+                    answerFound = checkIfAnswerFound(nextPage);
+
+                    if (answerFound) {
+                        break;
+                    }
+                }
+            }
+            foreach (KeyValuePair<string, int> URL in currentPage.Links) {
+                
+            }
+        }
+    }
+
+    private void SearchDFS() {
         Webpage currentPage, nextPage;
         string nextPageString;
         bool successfulTake, answerFound = false;
@@ -67,7 +101,7 @@ public class WikipediaSearcher
                     }
                 } catch (NullReferenceException e) {
                     Console.WriteLine("No webpages have been located yet. " + e);
-                    WikipediaWebRequest r = new WikipediaWebRequest(StartPage, Articles);
+                    WikipediaWebRequest r = new WikipediaWebRequest(StartPage, Articles, ForbiddenLinksCollection);
                     currentPage = Articles.GetWebpage(StartPage);
                 }
         }

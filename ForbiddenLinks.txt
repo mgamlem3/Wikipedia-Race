@@ -1,10 +1,2 @@
-////////////
-// File Name: ForbiddenLink.cs
-// Project: Wikipedia Race
-// Created By: Michael Gamlem III
-// Created On: December 6, 2018
-// Refer to License for Use Terms
-////////////
-
 /wiki/Help
 /wiki/portal

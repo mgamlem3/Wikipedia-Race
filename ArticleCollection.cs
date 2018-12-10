@@ -15,7 +15,10 @@ using System.Collections.Concurrent;
 public class ArticleCollection {
     private ConcurrentDictionary<string, Webpage> dictionary = new ConcurrentDictionary<string, Webpage>();
     private ConcurrentBag<Webpage> LinksToCrawl = new ConcurrentBag<Webpage>();
-    public ArticleCollection() {}
+    private ForbiddenLinks ForbiddenLinksCollection;
+    public ArticleCollection(ForbiddenLinks l) {
+        ForbiddenLinksCollection = l;
+    }
 
     public void AddWebpage(Webpage w) {
         Console.WriteLine("adding webpage "+w.Title);
@@ -54,7 +57,7 @@ public class ArticleCollection {
     }
 
     private bool TryToGetWebpage(string requestedPage) {
-        WikipediaWebRequest r = new WikipediaWebRequest(requestedPage, this);
+        WikipediaWebRequest r = new WikipediaWebRequest(requestedPage, this, ForbiddenLinksCollection);
         if (r == null) {
             return false;
         }
