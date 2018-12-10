@@ -1,2 +1,6 @@
 /wiki/Help
 /wiki/portal
+/wiki/help:
+/wiki/template:
+/wiki/File:
+File:

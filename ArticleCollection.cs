@@ -11,9 +11,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 public class ArticleCollection {
     private ConcurrentDictionary<string, Webpage> dictionary = new ConcurrentDictionary<string, Webpage>();
+    public Graph<string> gr = new Graph<string>();
     private ConcurrentBag<Webpage> LinksToCrawl = new ConcurrentBag<Webpage>();
     private ForbiddenLinks ForbiddenLinksCollection;
     public ArticleCollection(ForbiddenLinks l) {
@@ -24,6 +26,15 @@ public class ArticleCollection {
         Console.WriteLine("adding webpage "+w.Title);
         dictionary.TryAdd(w.Title, w);
         LinksToCrawl.Add(w);
+        UpdateGraph(w);
+    }
+
+    private void UpdateGraph(Webpage w) {
+        gr.AddVertex(w.Title);
+        foreach (var v in w.Links) {
+            gr.AddVertex(v.Key.Remove(0,6));
+            gr.AddEdge(new Tuple<string, string>(w.Title, v.Key.Remove(0,6)));
+        }
     }
 
     public ConcurrentBag<Webpage> GetLinksToCrawl() {
@@ -42,6 +53,8 @@ public class ArticleCollection {
         }
         return null;
     }
+
+    public double GetNumberOfArticles() { return dictionary.Count; }
     
     public Webpage WebpageInDictionary(string requestedPage) {
         Webpage w = null;
@@ -68,9 +81,11 @@ public class ArticleCollection {
 
     public bool WebpageContainsLinkToAnswer(string webpage, string answer) {
         Webpage w = WebpageInDictionary(webpage);
-        foreach (var value in w.Links) {
-            if (answer.ToLower() == value.Key.ToLower()) {
-                return true;
+        if (w != null) {
+            foreach (var value in w.Links) {
+                if (answer.ToLower() == value.Key.ToLower()) {
+                    return true;
+                }
             }
         }
         return false;

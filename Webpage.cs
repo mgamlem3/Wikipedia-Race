@@ -17,6 +17,7 @@ public class Webpage {
     private static int InitialDictionarySize = 50;
     public ConcurrentDictionary<string, int> Links = new ConcurrentDictionary<string, int>(ConcurrencyLevel, InitialDictionarySize);
     public ConcurrentBag<string> WebpagesToBeSearched = new ConcurrentBag<string>();
+    private Webpage parent;
 
     // default constructor
     // not used

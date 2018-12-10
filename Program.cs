@@ -22,21 +22,26 @@ namespace Wikipedia_Race
             // get data for first webpage
             WikipediaWebRequest request = new WikipediaWebRequest("wiki/"+StartPageName, Webpages, Forbidden);          
             if (request.SuccessfulWebRequest()) {
-                Console.WriteLine("Creating Searcher....");
                 WikipediaSearcher s = null;
-                Thread searcher = new Thread(() => {s = new WikipediaSearcher(Webpages, StartPageName, FinishPageName, Forbidden);});
-                searcher.Start();
-                searcher.Priority = ThreadPriority.AboveNormal;
-
                 ArticleCrawler c = new ArticleCrawler(Webpages, Forbidden);
-
                 Thread crawler = new Thread(() => c.Start());
                 crawler.Start();
                 crawler.Priority = ThreadPriority.Normal;
 
+                Console.WriteLine("Creating Searcher....");
+                Thread searcher = new Thread(() => {s = new WikipediaSearcher(Webpages, StartPageName, FinishPageName, Forbidden, "BFS");});
+
+                searcher.Start();
+                searcher.Priority = ThreadPriority.AboveNormal;
                     
                 searcher.Join();
-                crawler.Abort();
+
+                try {
+                    crawler.Abort();
+                }
+                catch (PlatformNotSupportedException) {
+                    Console.WriteLine("System does not support abort of threads.");
+                }
             }
         }
 
@@ -98,7 +103,7 @@ namespace Wikipedia_Race
             // Ask for end page
             Console.WriteLine("Which Wikipedia Page would you like to end with?");
             // FinishPageName = Console.ReadLine();
-            FinishPageName = "Federation";
+            FinishPageName = "Dalmatian";
             FinishPageName.Replace(' ', '_');
             
             // check if finish page exists

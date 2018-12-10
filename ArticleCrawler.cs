@@ -18,7 +18,7 @@ public class ArticleCrawler
     private ForbiddenLinks ForbiddenLinksCollection;
     private bool exit = false;
     private int threadCount = 0;
-    private const int MAXTHREADS = 10;
+    private const int MAXTHREADS = 1000;
 
     private ArticleCrawler() {}
 
