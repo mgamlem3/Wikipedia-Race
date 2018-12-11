@@ -6,11 +6,6 @@
 // Refer to License for Use Terms
 ////////////
 
-/* 
-    This file was created with help from https://www.koderdojo.com/blog/breadth-first-search-and-shortest-path-in-csharp-and-net-core.
-    The breadth-first search implementation is modified from the above link. (First Modified December 10, 2018).
-*/
-
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
