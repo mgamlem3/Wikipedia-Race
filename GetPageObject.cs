@@ -6,6 +6,7 @@
 // Refer to License for Use Terms
 ////////////
 
+// used to store data that is passed into thread for ArticleCrawler
 public class GetPageObject
 {
     public Webpage Page {get; set;}

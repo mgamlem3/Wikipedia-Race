@@ -7,10 +7,10 @@
 ////////////
 
 using System;
-using System.IO;
-using System.Net;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Text.RegularExpressions;
 
 // Used to request webpage from Wikipedia
@@ -19,19 +19,17 @@ public class WikipediaWebRequest
 {
     private string RequestedPage;
     private bool Success = false;
-
     private ForbiddenLinks ForbiddenLinkCollection;
-
     private const string TITLE_REGEX_PATTERN = @"(?:<h1[\w\d\s=\D]+>)([\w\d\s\-\:]+)(?:<\/h1>)";
     private const string LINK_REGEX_PATTERN =  @"(?:<a href=\D)(\/wiki\/[\w\d\-\:\?]+)";
     private Regex TITLE_REGEX = new Regex(TITLE_REGEX_PATTERN, RegexOptions.IgnoreCase);
-
     private ArticleCollection Articles = null;
-
     private Webpage ParentPage;
 
-    public WikipediaWebRequest() {}
+    // default constructor, not used
+    private WikipediaWebRequest() {}
 
+    // constructor
     public WikipediaWebRequest(string requested_page, ArticleCollection Webpages, ForbiddenLinks l, Webpage parent) {
         ParentPage = parent;
         RequestedPage = requested_page.Replace(' ', '_');
@@ -43,7 +41,9 @@ public class WikipediaWebRequest
         Controller();
     }
 
+    // internal function that governs order actions are performed
     private void Controller() {
+        // has webpage already been downloaded
         Webpage temp = Articles.WebpageInDictionary(RequestedPage);
         if (temp == null) {
             string response = NavigateToWebpage();

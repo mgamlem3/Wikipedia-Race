@@ -7,17 +7,27 @@
 ////////////
 
 using System;
-using System.Threading;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
+
+// Webpage object that stores Wikipedia pages
 public class Webpage {
     public string Title { get; set; }
-    private static int ProcessorCount = Environment.ProcessorCount;
-    private static int ConcurrencyLevel = ProcessorCount * 2;
-    private static int InitialDictionarySize = 50;
+    ////
+    // used to determine how big the dictionary should be
+        private static int ProcessorCount = Environment.ProcessorCount;
+        private static int ConcurrencyLevel = ProcessorCount * 2;
+        private static int InitialDictionarySize = 50;
+    ////
+    // stores links that website has to other websites
     public ConcurrentDictionary<string, int> Links = new ConcurrentDictionary<string, int>(ConcurrencyLevel, InitialDictionarySize);
+    // stores websites that have not been verified to be in the database yet
     public ConcurrentQueue<string> WebpagesToBeSearched = new ConcurrentQueue<string>();
+    // Webpage that linked to this page
     private Webpage Parent;
+    // used to store how many hops from the parent we are
+    // TODO: maybe use to implement custom concurrent priority queue
     private int HopsFromParent;
 
     // default constructor
@@ -39,10 +49,6 @@ public class Webpage {
          addLinks(new_links);
      }
 
-     public Webpage GetParent() {
-         return Parent;
-     }
-
     // appends one or more links to the list
     // inputs: list of links
     // outputs:
@@ -55,5 +61,10 @@ public class Webpage {
             Links.AddOrUpdate(link, 0, (key, oldValue) => oldValue++);
             WebpagesToBeSearched.Enqueue(link);
         }
+     }
+
+     // returns parent of page
+     public Webpage GetParent() {
+         return Parent;
      }
 }

@@ -13,44 +13,47 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+
+// used to search for answer
 public class WikipediaSearcher
 {
+    // stores path taken in DFS search
     private Stack<Webpage> PathTaken = new Stack<Webpage>();
     private static string StartPage;
     private static string FinishPage;
+    // article collection with articles that have been found
     private static ArticleCollection Articles;
+    // used to time how long execution takes
     private Stopwatch watch = new Stopwatch();
     private ForbiddenLinks ForbiddenLinksCollection;
-    private ConcurrentQueue<string> q = new ConcurrentQueue<string>();
 
+    // default constructor, unused
     WikipediaSearcher() {}
 
+    // constructor
+    // note: must specify which search type to use
     public WikipediaSearcher(ArticleCollection Webpages, string Start, string Finish, ForbiddenLinks l, string searchType) {
         StartPage = Start;
         FinishPage = Finish;
         Articles = Webpages;
         ForbiddenLinksCollection = l;
 
+        // depth first
         if (searchType == "DFS") {        
             watch.Start();
             SearchDFS();
             watch.Stop();
             Console.WriteLine(watch.ElapsedMilliseconds);
         }
+        // breadth first
         else if (searchType == "BFS") {
             watch.Start();
             SearchBFS();
-            // var shortestPath = SearchBFS(Articles.gr);
             watch.Stop();
-            // var path = shortestPath(FinishPage);
-            // Console.WriteLine("Shortest path from {0} to {1}: ", StartPage, FinishPage);
-            // foreach (var page in path) {
-            //     Console.WriteLine("\t"+page);
-            // }
             Console.WriteLine(watch.ElapsedMilliseconds + "ms");
         }
         else {
@@ -58,29 +61,40 @@ public class WikipediaSearcher
         }
     }
 
+    // breadth first search
     private void SearchBFS() {
+        // variables
         Webpage currentPage;
         bool answerFound = false;
         string answer = "";
         Queue<string> q = new Queue<string>();
-
+        
+        // add something to the queue
         q.Enqueue(StartPage);
+        // get first page
         currentPage = Articles.GetWebpage(StartPage, null);
+
+        // search
         while (q.Count > 0) {
+            // get vertex to search
             string vertex = q.Dequeue();
             currentPage = Articles.GetWebpage(vertex, currentPage);
             
+            // if webpage has not been found, put it back on queue and search next one
             if (currentPage == null) {
                 q.Enqueue(vertex);
                 continue;
             }
 
+            // if webpage has been downloaded
             foreach (var link in currentPage.Links) {
+                // check to see if this is the answer
                 answerFound = checkIfAnswerFound(link.Key.Remove(0,6).ToLower());
                 if (answerFound) {
                     answer = link.Key;
                     break;
                 }
+                // not the answer, put it on the queue to be searched later
                 else {
                     q.Enqueue(link.Key.Remove(0,6));
                 }
@@ -89,9 +103,13 @@ public class WikipediaSearcher
                 break;
             }
         }
+        // done, print results
         PrintResultsBFS(answerFound, answer, currentPage);
     }
 
+    // depth first search
+    // slow
+    // may contain bugs... abandoned when realized BFS was better
     private void SearchDFS() {
         Webpage currentPage, nextPage;
         string nextPageString;
@@ -109,7 +127,9 @@ public class WikipediaSearcher
                     successfulTake = currentPage.WebpagesToBeSearched.TryDequeue(out nextPageString);
 
                     if (successfulTake) {
+                        // get next page down
                         nextPage = Articles.GetWebpage(nextPageString, currentPage);
+                        // don't search pages that are not in database or that are the page I am currently on
                         if (nextPage == null || nextPage.Title == currentPage.Title) {
                             continue;
                         }
@@ -134,11 +154,15 @@ public class WikipediaSearcher
         PrintResultsDFS(answerFound);
     }
 
+    // used to determine if answer has been found
+    // input: webpage
+    // output: bool
     private bool checkIfAnswerFound(Webpage page) {
         // is the current page the answer?
         Console.WriteLine("Checking For Answer");
         Webpage temp = Articles.WebpageInDictionary(FinishPage);
         bool found = false;
+        // answer found
         if (temp != null) {
             PathTaken.Push(page);
             return true;
@@ -149,6 +173,10 @@ public class WikipediaSearcher
         }
         return found;
     }
+
+    // used to see if webpage is the answer by page title
+    // input: page title
+    // output bool
     private bool checkIfAnswerFound(string page) {
         Console.WriteLine("Checking for Answer: {0}", page);
         // is the current page the answer?
@@ -160,10 +188,12 @@ public class WikipediaSearcher
         }
     }
 
+    // output results of DFS search
     private void PrintResultsDFS(bool answerFound) {
         if (answerFound) {
             Console.WriteLine("Answer Found!");
             Array answerPath = PathTaken.ToArray();
+            // print path taken
             foreach(Webpage page in answerPath) {
                 Console.WriteLine("https://en.wikipedia.org/wiki/{0}", page.Title.Replace(" ", "_"));
             }
@@ -175,6 +205,9 @@ public class WikipediaSearcher
         }
     }
 
+    // used to print results of BFS
+    // input: if answer was found, answer string, parent webpage
+    // note: last two may be null if failure
     private void PrintResultsBFS(bool answerFound, string answer, Webpage parent) {
         if (answerFound) {
             string answerText = "";
@@ -197,5 +230,7 @@ public class WikipediaSearcher
             }
             Console.WriteLine(answerText+"\n");
         }
+        // TODO: page not found
+            // should thoretically not happen unless you wait a REALLY long time
     }
 }
