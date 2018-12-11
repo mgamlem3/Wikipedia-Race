@@ -28,9 +28,12 @@ public class WikipediaWebRequest
 
     private ArticleCollection Articles = null;
 
+    private Webpage ParentPage;
+
     public WikipediaWebRequest() {}
 
-    public WikipediaWebRequest(string requested_page, ArticleCollection Webpages, ForbiddenLinks l) {
+    public WikipediaWebRequest(string requested_page, ArticleCollection Webpages, ForbiddenLinks l, Webpage parent) {
+        ParentPage = parent;
         RequestedPage = requested_page.Replace(' ', '_');
         if (!RequestedPage.Contains("wiki/")) {
             RequestedPage.Insert(0, "wiki/");
@@ -99,7 +102,7 @@ public class WikipediaWebRequest
             // only save the matching group, discard non-matching groups
             unordered_links.Add(groups[1].ToString());
         }
-        Webpage newWebpage = new Webpage(title_match.Groups[1].ToString().ToLower(), unordered_links);
+        Webpage newWebpage = new Webpage(title_match.Groups[1].ToString().ToLower(), unordered_links, ParentPage);
 
         // add webpage to master list
         Articles.AddWebpage(newWebpage);

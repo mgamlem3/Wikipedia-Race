@@ -43,66 +43,53 @@ public class WikipediaSearcher
         }
         else if (searchType == "BFS") {
             watch.Start();
-            var shortestPath = SearchBFS(Articles.gr);
+            SearchBFS();
+            // var shortestPath = SearchBFS(Articles.gr);
             watch.Stop();
-            var path = shortestPath(FinishPage);
-            Console.WriteLine("Shortest path from {0} to {1}: ", StartPage, FinishPage);
-            foreach (var page in path) {
-                Console.WriteLine("\t"+page);
-            }
-            Console.WriteLine(watch.ElapsedMilliseconds);
+            // var path = shortestPath(FinishPage);
+            // Console.WriteLine("Shortest path from {0} to {1}: ", StartPage, FinishPage);
+            // foreach (var page in path) {
+            //     Console.WriteLine("\t"+page);
+            // }
+            Console.WriteLine(watch.ElapsedMilliseconds + "ms");
         }
         else {
             Console.WriteLine("Please enter either DFS or BFS to indicate which search type you prefer.");
         }
     }
 
-    private Func<string, IEnumerable<string>> SearchBFS(Graph<string> graph) {
-        var previous = new Dictionary<string, string>();
+    private void SearchBFS() {
+        Webpage currentPage;
         bool answerFound = false;
-        string start = StartPage;
+        string answer = "";
+        Queue<string> q = new Queue<string>();
 
-        q.Enqueue(start.ToLower());
-
+        q.Enqueue(StartPage);
+        currentPage = Articles.GetWebpage(StartPage, null);
         while (q.Count > 0) {
-            string vertex;
-            q.TryDequeue(out vertex);
-            foreach(var neighbor in Articles.gr.AdjacencyList[vertex]) {
-                if (previous.ContainsKey(neighbor)) {
-                    continue;
-                }
-                answerFound = checkIfAnswerFound(neighbor);
+            string vertex = q.Dequeue();
+            currentPage = Articles.GetWebpage(vertex, currentPage);
+            
+            if (currentPage == null) {
+                q.Enqueue(vertex);
+                continue;
+            }
+
+            foreach (var link in currentPage.Links) {
+                answerFound = checkIfAnswerFound(link.Key.Remove(0,6).ToLower());
                 if (answerFound) {
+                    answer = link.Key;
                     break;
                 }
-                previous[neighbor] = vertex;
-                
-                q.Enqueue(neighbor);
+                else {
+                    q.Enqueue(link.Key.Remove(0,6));
+                }
             }
             if (answerFound) {
                 break;
             }
         }
-
-        Func<string, IEnumerable<string>> shortestPath = v => {
-            var path = new List<string>{};
-
-            var current = v;
-            while (!current.ToLower().Equals(start.ToLower())) {
-                path.Add(current);
-                if (current == FinishPage) {
-                    break;
-                }
-                current = previous[current];
-            };
-
-            path.Add(start);
-            path.Reverse();
-
-            return path;
-        };
-
-        return shortestPath;
+        PrintResultsBFS(answerFound, answer, currentPage);
     }
 
     private void SearchDFS() {
@@ -110,7 +97,7 @@ public class WikipediaSearcher
         string nextPageString;
         bool successfulTake, answerFound = false;
 
-        currentPage = Articles.GetWebpage(StartPage);
+        currentPage = Articles.GetWebpage(StartPage, null);
         if (currentPage != null) {
             PathTaken.Push(currentPage);
         }
@@ -119,10 +106,10 @@ public class WikipediaSearcher
             currentPage = PathTaken.Peek();
                 // get next page to be searched
                 try {
-                    successfulTake = currentPage.WebpagesToBeSearched.TryTake(out nextPageString);
+                    successfulTake = currentPage.WebpagesToBeSearched.TryDequeue(out nextPageString);
 
                     if (successfulTake) {
-                        nextPage = Articles.GetWebpage(nextPageString);
+                        nextPage = Articles.GetWebpage(nextPageString, currentPage);
                         if (nextPage == null || nextPage.Title == currentPage.Title) {
                             continue;
                         }
@@ -140,11 +127,11 @@ public class WikipediaSearcher
                     }
                 } catch (NullReferenceException e) {
                     Console.WriteLine("No webpages have been located yet. " + e);
-                    WikipediaWebRequest r = new WikipediaWebRequest(StartPage, Articles, ForbiddenLinksCollection);
-                    currentPage = Articles.GetWebpage(StartPage);
+                    WikipediaWebRequest r = new WikipediaWebRequest(StartPage, Articles, ForbiddenLinksCollection, currentPage);
+                    currentPage = Articles.GetWebpage(StartPage, null);
                 }
         }
-        PrintResults(answerFound);
+        PrintResultsDFS(answerFound);
     }
 
     private bool checkIfAnswerFound(Webpage page) {
@@ -163,21 +150,17 @@ public class WikipediaSearcher
         return found;
     }
     private bool checkIfAnswerFound(string page) {
+        Console.WriteLine("Checking for Answer: {0}", page);
         // is the current page the answer?
-        Console.WriteLine("Checking For Answer");
-        Webpage temp = Articles.WebpageInDictionary(FinishPage);
-        bool found = false;
-        if (temp != null) {
+        if (page.ToLower() == FinishPage.ToLower()) {
             return true;
         }
-        else if (temp == null) {
-            // does the current page contain the link to the answer?
-            found = Articles.WebpageContainsLinkToAnswer(page, FinishPage);
+        else {
+            return false;
         }
-        return found;
     }
 
-    private void PrintResults(bool answerFound) {
+    private void PrintResultsDFS(bool answerFound) {
         if (answerFound) {
             Console.WriteLine("Answer Found!");
             Array answerPath = PathTaken.ToArray();
@@ -189,6 +172,30 @@ public class WikipediaSearcher
         else {
             Console.WriteLine("Answer was not found :(");
             Console.WriteLine("You Win.");
+        }
+    }
+
+    private void PrintResultsBFS(bool answerFound, string answer, Webpage parent) {
+        if (answerFound) {
+            string answerText = "";
+            string current = answer;
+            Webpage w = parent;
+            List<string> path = new List<string>();
+            path.Add(answer.Remove(0,6));
+            current = parent.Title;
+            while (current != null) {
+                path.Add(current);                
+                // while (w == null) {
+                //     w = Articles.GetWebpage(current, parent);
+                // }
+                w = w.GetParent();
+                current = w?.Title;
+            }
+            answerText += "\n\nAnswer Found!\n";
+            foreach (var s in path) {
+                answerText += "/wiki/" + s.Replace(" ", "_") + "\n";
+            }
+            Console.WriteLine(answerText+"\n");
         }
     }
 }

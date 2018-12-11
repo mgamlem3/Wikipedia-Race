@@ -15,8 +15,7 @@ using System.Collections.Generic;
 
 public class ArticleCollection {
     private ConcurrentDictionary<string, Webpage> dictionary = new ConcurrentDictionary<string, Webpage>();
-    public Graph<string> gr = new Graph<string>();
-    private ConcurrentBag<Webpage> LinksToCrawl = new ConcurrentBag<Webpage>();
+    public ConcurrentQueue<Webpage> LinksToCrawl = new ConcurrentQueue<Webpage>();
     private ForbiddenLinks ForbiddenLinksCollection;
     public ArticleCollection(ForbiddenLinks l) {
         ForbiddenLinksCollection = l;
@@ -25,27 +24,18 @@ public class ArticleCollection {
     public void AddWebpage(Webpage w) {
         Console.WriteLine("adding webpage "+w.Title);
         dictionary.TryAdd(w.Title, w);
-        LinksToCrawl.Add(w);
-        UpdateGraph(w);
+        LinksToCrawl.Enqueue(w);
     }
 
-    private void UpdateGraph(Webpage w) {
-        gr.AddVertex(w.Title);
-        foreach (var v in w.Links) {
-            gr.AddVertex(v.Key.Remove(0,6));
-            gr.AddEdge(new Tuple<string, string>(w.Title, v.Key.Remove(0,6)));
-        }
-    }
-
-    public ConcurrentBag<Webpage> GetLinksToCrawl() {
+    public ConcurrentQueue<Webpage> GetLinksToCrawl() {
         return LinksToCrawl;
     }
 
-    public Webpage GetWebpage(string requestedPage) {
+    public Webpage GetWebpage(string requestedPage, Webpage parent) {
         Webpage w = null;
         bool success = dictionary.TryGetValue(requestedPage.Replace("/wiki/", "").ToLower(), out w);
         if (!success) {
-            success = TryToGetWebpage(requestedPage);
+            success = TryToGetWebpage(requestedPage, parent);
         }
         if (success) {
             dictionary.TryGetValue(requestedPage.Replace("/wiki/", "").ToLower(), out w);
@@ -69,8 +59,8 @@ public class ArticleCollection {
         return w;
     }
 
-    private bool TryToGetWebpage(string requestedPage) {
-        WikipediaWebRequest r = new WikipediaWebRequest(requestedPage, this, ForbiddenLinksCollection);
+    private bool TryToGetWebpage(string requestedPage, Webpage parent) {
+        WikipediaWebRequest r = new WikipediaWebRequest(requestedPage, this, ForbiddenLinksCollection, parent);
         if (r == null) {
             return false;
         }

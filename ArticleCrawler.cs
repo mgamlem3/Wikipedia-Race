@@ -18,7 +18,7 @@ public class ArticleCrawler
     private ForbiddenLinks ForbiddenLinksCollection;
     private bool exit = false;
     private int threadCount = 0;
-    private const int MAXTHREADS = 1000;
+    private const int MAXTHREADS = 100;
 
     private ArticleCrawler() {}
 
@@ -35,42 +35,57 @@ public class ArticleCrawler
     }
 
     private void Crawl() {
-        foreach (Webpage w in Articles.GetLinksToCrawl()) {
-            foreach (string link in w.Links.Keys) {
-                Webpage t = Articles.WebpageInDictionary(link);
+        while (!Articles.LinksToCrawl.IsEmpty) {
+            Webpage w;
+            GetPageObject pageObject = new GetPageObject();
+            Articles.LinksToCrawl.TryDequeue(out w);
+
+            while (!w.WebpagesToBeSearched.IsEmpty) {
+                string temp = "";
+                bool successfulTake = false;
+                
+                while (!successfulTake) {
+                    successfulTake = w.WebpagesToBeSearched.TryDequeue(out temp);
+                }
+
+                Webpage t = Articles.WebpageInDictionary(temp);
                 if (t != null) {
                     continue;
                 }
                 else {
                     bool threadCreated = false;
-                    while (threadCreated == false) {
+                    while(!threadCreated) {
                         if (threadCount >= MAXTHREADS) {
+                            w.WebpagesToBeSearched.Enqueue(temp);
                             Thread.Sleep(2000);
-                            continue;
                         }
                         try {
                             WaitCallback callback = new WaitCallback(GetPage);
-                            ThreadPool.QueueUserWorkItem(callback, link);
+                            pageObject.Page = w;
+                            pageObject.Str = temp;
+                            ThreadPool.QueueUserWorkItem(callback, pageObject);
                             threadCreated = true;
                             threadCount++;
-                        } catch (OutOfMemoryException e) {
+                            Thread.Sleep(200);
+                        }
+                        catch (OutOfMemoryException e) {
                             Console.WriteLine("Not enough memory to create thread... Will wait and try again..." + e);
                             Thread.Sleep(500);
                         }
                     }
                 }
             }
-            Console.WriteLine("sleeping");
-            Thread.Sleep(10000);
         }
     }
 
-    private void GetPage(object s) {
-        string str = s.ToString();
-        Webpage w = Articles.WebpageInDictionary(str);
+    private void GetPage(object o) {
+        GetPageObject obj = (GetPageObject)o;
+        string _str = obj.Str;
+        Webpage parent = obj.Page;
+        Webpage w = Articles.WebpageInDictionary(_str);
         if (w == null) {
-            Console.WriteLine("requesting: "+str);
-            WikipediaWebRequest r = new WikipediaWebRequest(str, Articles, ForbiddenLinksCollection);
+            Console.WriteLine("requesting: "+_str);
+            WikipediaWebRequest r = new WikipediaWebRequest(_str, Articles, ForbiddenLinksCollection, parent);
             threadCount--;
         }
     }

@@ -20,7 +20,7 @@ namespace Wikipedia_Race
         // search for the finishing website
         void searchForWebsite(string StartPageName, string FinishPageName, ArticleCollection Webpages, ForbiddenLinks Forbidden) {
             // get data for first webpage
-            WikipediaWebRequest request = new WikipediaWebRequest("wiki/"+StartPageName, Webpages, Forbidden);          
+            WikipediaWebRequest request = new WikipediaWebRequest("wiki/"+StartPageName, Webpages, Forbidden, null);          
             if (request.SuccessfulWebRequest()) {
                 WikipediaSearcher s = null;
                 ArticleCrawler c = new ArticleCrawler(Webpages, Forbidden);
@@ -103,7 +103,7 @@ namespace Wikipedia_Race
             // Ask for end page
             Console.WriteLine("Which Wikipedia Page would you like to end with?");
             // FinishPageName = Console.ReadLine();
-            FinishPageName = "Dalmatian";
+            FinishPageName = "Dog";
             FinishPageName.Replace(' ', '_');
             
             // check if finish page exists

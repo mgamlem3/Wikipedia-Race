@@ -16,8 +16,9 @@ public class Webpage {
     private static int ConcurrencyLevel = ProcessorCount * 2;
     private static int InitialDictionarySize = 50;
     public ConcurrentDictionary<string, int> Links = new ConcurrentDictionary<string, int>(ConcurrencyLevel, InitialDictionarySize);
-    public ConcurrentBag<string> WebpagesToBeSearched = new ConcurrentBag<string>();
-    private Webpage parent;
+    public ConcurrentQueue<string> WebpagesToBeSearched = new ConcurrentQueue<string>();
+    private Webpage Parent;
+    private int HopsFromParent;
 
     // default constructor
     // not used
@@ -26,9 +27,20 @@ public class Webpage {
     // constructor
     // input: title (string) of webpage & list of one or more links from the webpage
     // output: new webpage object
-     public Webpage(string new_title, List<string> new_links) {
+     public Webpage(string new_title, List<string> new_links, Webpage parent) {
          Title = new_title;
+         if (parent == null) {
+             HopsFromParent = 0;
+         }
+         else {
+            HopsFromParent = parent.HopsFromParent + 1;
+         }
+         Parent = parent;
          addLinks(new_links);
+     }
+
+     public Webpage GetParent() {
+         return Parent;
      }
 
     // appends one or more links to the list
@@ -41,7 +53,7 @@ public class Webpage {
             }
             string link = links_to_add[i].TrimEnd('_');
             Links.AddOrUpdate(link, 0, (key, oldValue) => oldValue++);
-            WebpagesToBeSearched.Add(link);
+            WebpagesToBeSearched.Enqueue(link);
         }
      }
 }
