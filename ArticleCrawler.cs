@@ -3,6 +3,7 @@
 // Project: Wikipedia Race
 // Created By: Michael Gamlem III
 // Created On: December 4, 2018
+// Copyright (C) 2018 Michael Gamlem III
 // Refer to License for Use Terms
 ////////////
 
